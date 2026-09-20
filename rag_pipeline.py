@@ -107,4 +107,44 @@ and if you don't know the answer, just say "I don't know.""")
         print(f"A: {answer}\n")
 
 
-basic_rag()
+def demo_rag_with_sources():
+    vectorstore = create_knowleage_base()
+    retriver = vectorstore.as_retriever(search_kwargs={"k": 3})
+    llm = ChatOllama(model="llama3:8b")
+
+    propt = ChatPromptTemplate.from_template("""
+
+    Anser the question based on context below. Include sources you used.
+
+    Context:
+    {context}
+
+    Question : {question}
+
+    Answer (include sources) :
+                                             """)
+
+    def format_docs_with_sources(docs):
+        formated = []
+        for i, doc in enumerate(docs):
+            source = doc.metadata.get("source", "unknown")
+            formated.append(f"[{i+1}] {source}: \n {doc.page_content}")
+        return "\n\n".join(formated)
+
+    chain = (
+        {
+            "context": retriver | format_docs_with_sources,
+            "question": RunnablePassthrough(),
+        }
+        | propt
+        | llm
+        | StrOutputParser()
+    )
+    print("RAG with Sources:\n")
+    answer = chain.invoke("What are the core components of LangChain?")
+    print(f"Q: What are the core components?\n")
+    print(f"A: {answer}")
+
+
+demo_rag_with_sources()
+# basic_rag()
