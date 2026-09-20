@@ -91,7 +91,7 @@ def demo_model_routing():
     print(f"\nTotal Estimated Cost: ${total_cost:.6f}")
 
 
-# === Semantic Caching ===
+# !=== Semantic Caching ===
 
 
 class SemanticCache:
@@ -287,7 +287,7 @@ if __name__ == "__main__":
     # demo_caching()
     demo_token_budgeting()
 
-    # Production version would:
+    # !!! Production version would: ========================
 # 1. Embed the query into a vector
 # 2. Search the cache by vector similarity
 # 3. Return if similarity > threshold (e.g., 0.95)
