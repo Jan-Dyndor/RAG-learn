@@ -23,48 +23,45 @@ class ResponseCache:
         normalized = query.lower().strip()
         return hashlib.sha256(normalized.encode()).hexdigest()
 
+    def get(self, query: str) -> str | None:
+        """
+        Get cached response if it exists and hasn't expired.
+        Returns None on cache miss.
+        """
+        key = self._make_key(query)
 
-def get(self, query: str) -> str | None:
-    """
-    Get cached response if it exists and hasn't expired.
-    Returns None on cache miss.
-    """
-    key = self._make_key(query)
+        if key in self._cache:
+            entry = self._cache[key]
 
-    if key in self._cache:
-        entry = self._cache[key]
+            # Check TTL
+            if time.time() - entry["timestamp"] < self.ttl:
+                self._hits += 1
+                return entry["response"]
+            else:
+                # Expired - remove it
+                del self._cache[key]
+        self._misses += 1
+        return None
 
-        # Check TTL
-        if time.time() - entry["timestamp"] < self.ttl:
-            self._hits += 1
-            return entry["response"]
-        else:
-            # Expired - remove it
-            del self._cache[key]
-    self._misses += 1
-    return None
+    def set(self, query: str, response: str) -> None:
+        """Cache a response."""
+        key = self._make_key(query)
 
+        self._cache[key] = {
+            "response": response,
+            "timestamp": time.time(),
+            "query": query,
+        }
 
-def set(self, query: str, response: str) -> None:
-    """Cache a response."""
-    key = self._make_key(query)
+    @property
+    def stats(self) -> dict:
+        """Cache performance statistics."""
+        total = self._hits + self._misses
+        hit_rate = self._hits / total if total > 0 else 0.0
 
-    self._cache[key] = {
-        "response": response,
-        "timestamp": time.time(),
-        "query": query,
-    }
-
-
-@property
-def stats(self) -> dict:
-    """Cache performance statistics."""
-    total = self._hits + self._misses
-    hit_rate = self._hits / total if total > 0 else 0.0
-
-    return {
-        "hits": self._hits,
-        "misses": self._misses,
-        "hit_rate": f"{hit_rate:.1%}",
-        "cached_entries": len(self._cache),
-    }
+        return {
+            "hits": self._hits,
+            "misses": self._misses,
+            "hit_rate": f"{hit_rate:.1%}",
+            "cached_entries": len(self._cache),
+        }

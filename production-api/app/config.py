@@ -6,8 +6,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
 
     # LLM Config
-    primary_model: str = "llama3:b"
-    fallback_model: str = "llama3.2:b"
+    primary_model: str = "llama3:8b"
+    fallback_model: str = "llama3.2:3b"
 
     # Langsmith
     langchain_tracing_v2: bool = True
